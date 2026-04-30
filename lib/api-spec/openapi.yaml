@@ -3,34 +3,746 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Travel CRM API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: users
+  - name: leads
+  - name: activities
+  - name: bookings
+  - name: payments
+  - name: dashboard
+  - name: automation
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterBody" }
+      responses:
+        "200":
+          description: Registered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginBody" }
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Current authenticated user
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users (for assignment)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: "#/components/schemas/User" }
+
+  /leads:
+    get:
+      operationId: listLeads
+      tags: [leads]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: source
+          schema: { type: string }
+        - in: query
+          name: assignedTo
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Lead" }
+    post:
+      operationId: createLead
+      tags: [leads]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateLeadBody" }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Lead" }
+
+  /leads/pending-followups:
+    get:
+      operationId: listPendingFollowups
+      tags: [leads]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Lead" }
+
+  /leads/{id}:
+    get:
+      operationId: getLead
+      tags: [leads]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Lead" }
+    patch:
+      operationId: updateLead
+      tags: [leads]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateLeadBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Lead" }
+    delete:
+      operationId: deleteLead
+      tags: [leads]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessMessage" }
+
+  /leads/{id}/activities:
+    get:
+      operationId: listLeadActivities
+      tags: [activities]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LeadActivity" }
+    post:
+      operationId: createLeadActivity
+      tags: [activities]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateActivityBody" }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LeadActivity" }
+
+  /bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Booking" }
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateBookingBody" }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Booking" }
+
+  /bookings/{id}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BookingDetail" }
+    patch:
+      operationId: updateBooking
+      tags: [bookings]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateBookingBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Booking" }
+    delete:
+      operationId: deleteBooking
+      tags: [bookings]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessMessage" }
+
+  /bookings/{id}/payments:
+    get:
+      operationId: listBookingPayments
+      tags: [payments]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Payment" }
+    post:
+      operationId: createBookingPayment
+      tags: [payments]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreatePaymentBody" }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Payment" }
+
+  /payments:
+    get:
+      operationId: listPayments
+      tags: [payments]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Payment" }
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+
+  /dashboard/pipeline:
+    get:
+      operationId: getPipelineSummary
+      tags: [dashboard]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PipelineStage" }
+
+  /dashboard/sources:
+    get:
+      operationId: getSourceBreakdown
+      tags: [dashboard]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/SourceCount" }
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RecentActivityItem" }
+
+  /dashboard/top-destinations:
+    get:
+      operationId: getTopDestinations
+      tags: [dashboard]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DestinationStat" }
+
+  /automation/run:
+    post:
+      operationId: runAutomation
+      tags: [automation]
+      summary: Run automation pass (mark stale leads cold, return today's reminders)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AutomationResult" }
+
+  /automation/pending-payments:
+    get:
+      operationId: getPendingPayments
+      tags: [automation]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PendingPayment" }
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    SuccessMessage:
+      type: object
+      properties:
+        success: { type: boolean }
+      required: [success]
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string, enum: [admin, agent] }
+        createdAt: { type: string }
+      required: [id, name, email, role, createdAt]
+
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string }
+        user: { $ref: "#/components/schemas/User" }
+      required: [token, user]
+
+    RegisterBody:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6 }
+        role: { type: string, enum: [admin, agent] }
+      required: [name, email, password]
+
+    LoginBody:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+      required: [email, password]
+
+    Lead:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        phone: { type: string }
+        city: { type: string, nullable: true }
+        source: { type: string, enum: [Instagram, Facebook, Website, Manual, Referral] }
+        status: { type: string, enum: [New, Contacted, Interested, Quotation, "Follow-up", Converted, Lost, Cold] }
+        assignedTo: { type: integer, nullable: true }
+        assignedToName: { type: string, nullable: true }
+        followUpDate: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+      required: [id, name, phone, source, status, createdAt, updatedAt]
+
+    CreateLeadBody:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        phone: { type: string, minLength: 1 }
+        city: { type: string, nullable: true }
+        source: { type: string, enum: [Instagram, Facebook, Website, Manual, Referral] }
+        status: { type: string, enum: [New, Contacted, Interested, Quotation, "Follow-up", Converted, Lost, Cold] }
+        assignedTo: { type: integer, nullable: true }
+        followUpDate: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+      required: [name, phone, source]
+
+    UpdateLeadBody:
+      type: object
+      properties:
+        name: { type: string }
+        phone: { type: string }
+        city: { type: string, nullable: true }
+        source: { type: string, enum: [Instagram, Facebook, Website, Manual, Referral] }
+        status: { type: string, enum: [New, Contacted, Interested, Quotation, "Follow-up", Converted, Lost, Cold] }
+        assignedTo: { type: integer, nullable: true }
+        followUpDate: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+
+    LeadActivity:
+      type: object
+      properties:
+        id: { type: integer }
+        leadId: { type: integer }
+        userId: { type: integer, nullable: true }
+        userName: { type: string, nullable: true }
+        type: { type: string, enum: [call, note, whatsapp, email, status_change] }
+        description: { type: string }
+        createdAt: { type: string }
+      required: [id, leadId, type, description, createdAt]
+
+    CreateActivityBody:
+      type: object
+      properties:
+        type: { type: string, enum: [call, note, whatsapp, email] }
+        description: { type: string, minLength: 1 }
+      required: [type, description]
+
+    Booking:
+      type: object
+      properties:
+        id: { type: integer }
+        leadId: { type: integer }
+        leadName: { type: string, nullable: true }
+        packageName: { type: string }
+        destination: { type: string }
+        tripType: { type: string, enum: [Domestic, International] }
+        startDate: { type: string }
+        endDate: { type: string }
+        adults: { type: integer }
+        children: { type: integer }
+        infants: { type: integer }
+        totalPersons: { type: integer }
+        travelMode: { type: string, enum: [Self, Volvo, Train, Flight] }
+        packageServiceType: { type: string, enum: ["Hotel Only", "Hotel + Cab", "Complete Package"] }
+        hotelType: { type: string, enum: ["3*", "4*", "5*"], nullable: true }
+        mealPlan: { type: string, enum: [CP, MAP, AP], nullable: true }
+        costPrice: { type: number }
+        salePrice: { type: number }
+        profit: { type: number }
+        paid: { type: number }
+        balance: { type: number }
+        createdAt: { type: string }
+      required: [id, leadId, packageName, destination, tripType, startDate, endDate, adults, children, infants, totalPersons, travelMode, packageServiceType, costPrice, salePrice, profit, paid, balance, createdAt]
+
+    BookingDetail:
+      allOf:
+        - $ref: "#/components/schemas/Booking"
+        - type: object
+          properties:
+            payments:
+              type: array
+              items: { $ref: "#/components/schemas/Payment" }
+          required: [payments]
+
+    CreateBookingBody:
+      type: object
+      properties:
+        leadId: { type: integer }
+        packageName: { type: string, minLength: 1 }
+        destination: { type: string, minLength: 1 }
+        tripType: { type: string, enum: [Domestic, International] }
+        startDate: { type: string }
+        endDate: { type: string }
+        adults: { type: integer, minimum: 1 }
+        children: { type: integer, minimum: 0 }
+        infants: { type: integer, minimum: 0 }
+        travelMode: { type: string, enum: [Self, Volvo, Train, Flight] }
+        packageServiceType: { type: string, enum: ["Hotel Only", "Hotel + Cab", "Complete Package"] }
+        hotelType: { type: string, enum: ["3*", "4*", "5*"], nullable: true }
+        mealPlan: { type: string, enum: [CP, MAP, AP], nullable: true }
+        costPrice: { type: number, minimum: 0 }
+        salePrice: { type: number, minimum: 0 }
+      required: [leadId, packageName, destination, tripType, startDate, endDate, adults, children, infants, travelMode, packageServiceType, costPrice, salePrice]
+
+    UpdateBookingBody:
+      type: object
+      properties:
+        packageName: { type: string }
+        destination: { type: string }
+        tripType: { type: string, enum: [Domestic, International] }
+        startDate: { type: string }
+        endDate: { type: string }
+        adults: { type: integer, minimum: 1 }
+        children: { type: integer, minimum: 0 }
+        infants: { type: integer, minimum: 0 }
+        travelMode: { type: string, enum: [Self, Volvo, Train, Flight] }
+        packageServiceType: { type: string, enum: ["Hotel Only", "Hotel + Cab", "Complete Package"] }
+        hotelType: { type: string, enum: ["3*", "4*", "5*"], nullable: true }
+        mealPlan: { type: string, enum: [CP, MAP, AP], nullable: true }
+        costPrice: { type: number, minimum: 0 }
+        salePrice: { type: number, minimum: 0 }
+
+    Payment:
+      type: object
+      properties:
+        id: { type: integer }
+        bookingId: { type: integer }
+        amount: { type: number }
+        date: { type: string }
+        method: { type: string, enum: [Cash, UPI, "Bank Transfer", Card, Cheque] }
+        type: { type: string, enum: [Advance, Partial, Full] }
+        notes: { type: string, nullable: true }
+        createdAt: { type: string }
+      required: [id, bookingId, amount, date, method, type, createdAt]
+
+    CreatePaymentBody:
+      type: object
+      properties:
+        amount: { type: number, minimum: 0 }
+        date: { type: string }
+        method: { type: string, enum: [Cash, UPI, "Bank Transfer", Card, Cheque] }
+        type: { type: string, enum: [Advance, Partial, Full] }
+        notes: { type: string, nullable: true }
+      required: [amount, date, method, type]
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalLeads: { type: integer }
+        newLeads: { type: integer }
+        convertedLeads: { type: integer }
+        conversionRate: { type: number }
+        totalBookings: { type: integer }
+        totalRevenue: { type: number }
+        totalCost: { type: number }
+        totalProfit: { type: number }
+        totalPaid: { type: number }
+        outstandingBalance: { type: number }
+        followUpsToday: { type: integer }
+        overdueFollowUps: { type: integer }
+      required: [totalLeads, newLeads, convertedLeads, conversionRate, totalBookings, totalRevenue, totalCost, totalProfit, totalPaid, outstandingBalance, followUpsToday, overdueFollowUps]
+
+    PipelineStage:
+      type: object
+      properties:
+        status: { type: string }
+        count: { type: integer }
+      required: [status, count]
+
+    SourceCount:
+      type: object
+      properties:
+        source: { type: string }
+        count: { type: integer }
+      required: [source, count]
+
+    RecentActivityItem:
+      type: object
+      properties:
+        id: { type: integer }
+        leadId: { type: integer }
+        leadName: { type: string }
+        type: { type: string }
+        description: { type: string }
+        createdAt: { type: string }
+      required: [id, leadId, leadName, type, description, createdAt]
+
+    DestinationStat:
+      type: object
+      properties:
+        destination: { type: string }
+        bookings: { type: integer }
+        revenue: { type: number }
+      required: [destination, bookings, revenue]
+
+    AutomationResult:
+      type: object
+      properties:
+        markedCold: { type: integer }
+        followUpsToday: { type: integer }
+        overdueFollowUps: { type: integer }
+        pendingPayments: { type: integer }
+      required: [markedCold, followUpsToday, overdueFollowUps, pendingPayments]
+
+    PendingPayment:
+      type: object
+      properties:
+        bookingId: { type: integer }
+        leadId: { type: integer }
+        leadName: { type: string }
+        packageName: { type: string }
+        salePrice: { type: number }
+        paid: { type: number }
+        balance: { type: number }
+      required: [bookingId, leadId, leadName, packageName, salePrice, paid, balance]
