@@ -1,8 +1,9 @@
-import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
+import { useEffect, useState } from "react";
 
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
@@ -20,10 +21,40 @@ import Settings from "@/pages/settings";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const token = typeof localStorage !== "undefined" ? localStorage.getItem("crm_token") : null;
+function useAuthGate(): { token: string | null; ready: boolean } {
+  const [token, setToken] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setToken(localStorage.getItem("crm_token"));
+    setReady(true);
+    const onStorage = () => setToken(localStorage.getItem("crm_token"));
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+  return { token, ready };
+}
 
-  if (!token) return <Redirect to="/login" />;
+function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const { token, ready } = useAuthGate();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (ready && !token) {
+      setLocation("/login");
+    }
+  }, [ready, token, setLocation]);
+
+  if (!ready) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/40">
+        <div className="text-sm text-muted-foreground">Loading…</div>
+      </div>
+    );
+  }
+
+  if (!token) {
+    return <Login />;
+  }
 
   return (
     <Layout>
@@ -37,16 +68,16 @@ function Router() {
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
-      <Route path="/" render={() => <ProtectedRoute component={Dashboard} />} />
-      <Route path="/leads" render={() => <ProtectedRoute component={Leads} />} />
-      <Route path="/pipeline" render={() => <ProtectedRoute component={Pipeline} />} />
-      <Route path="/leads/:id" render={() => <ProtectedRoute component={LeadDetail} />} />
-      <Route path="/follow-ups" render={() => <ProtectedRoute component={FollowUps} />} />
-      <Route path="/bookings" render={() => <ProtectedRoute component={Bookings} />} />
-      <Route path="/bookings/:id" render={() => <ProtectedRoute component={BookingDetail} />} />
-      <Route path="/payments" render={() => <ProtectedRoute component={Payments} />} />
-      <Route path="/team" render={() => <ProtectedRoute component={Team} />} />
-      <Route path="/settings" render={() => <ProtectedRoute component={Settings} />} />
+      <Route path="/">{() => <ProtectedRoute component={Dashboard} />}</Route>
+      <Route path="/leads">{() => <ProtectedRoute component={Leads} />}</Route>
+      <Route path="/pipeline">{() => <ProtectedRoute component={Pipeline} />}</Route>
+      <Route path="/leads/:id">{() => <ProtectedRoute component={LeadDetail} />}</Route>
+      <Route path="/follow-ups">{() => <ProtectedRoute component={FollowUps} />}</Route>
+      <Route path="/bookings">{() => <ProtectedRoute component={Bookings} />}</Route>
+      <Route path="/bookings/:id">{() => <ProtectedRoute component={BookingDetail} />}</Route>
+      <Route path="/payments">{() => <ProtectedRoute component={Payments} />}</Route>
+      <Route path="/team">{() => <ProtectedRoute component={Team} />}</Route>
+      <Route path="/settings">{() => <ProtectedRoute component={Settings} />}</Route>
       <Route component={NotFound} />
     </Switch>
   );
