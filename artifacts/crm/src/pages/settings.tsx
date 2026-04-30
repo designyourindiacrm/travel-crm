@@ -62,7 +62,7 @@ export default function Settings() {
               <Building2 className="w-5 h-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Workspace</p>
-                <p className="text-sm text-muted-foreground">Voyager Travels</p>
+                <p className="text-sm text-muted-foreground">Design Your India</p>
               </div>
             </div>
           </div>

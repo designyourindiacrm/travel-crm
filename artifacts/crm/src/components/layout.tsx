@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
-import { useGetMe } from "@workspace/api-client-react";
-import { Building2, LayoutDashboard, Users, UserCircle, Briefcase, CreditCard, KanbanSquare, Settings, LogOut, Menu } from "lucide-react";
+import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
+import { LayoutDashboard, Users, UserCircle, Briefcase, CreditCard, KanbanSquare, Settings, LogOut, Menu, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -30,7 +30,7 @@ const NAV_ITEMS = [
 
 function AppSidebar() {
   const [location] = useLocation();
-  const { data: user } = useGetMe({ query: { retry: false } });
+  const { data: user } = useGetMe({ query: { queryKey: getGetMeQueryKey(), retry: false } });
 
   const handleLogout = () => {
     localStorage.removeItem("crm_token");
@@ -40,13 +40,15 @@ function AppSidebar() {
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader className="border-b p-4">
-        <div className="flex items-center gap-2 px-2">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Building2 className="size-4" />
-          </div>
+        <div className="flex items-center gap-3 px-2">
+          <img
+            src="/dyi-logo.png"
+            alt="Design Your India"
+            className="h-10 w-auto object-contain"
+          />
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold tracking-tight text-primary">VOYAGER</span>
-            <span className="truncate text-xs text-muted-foreground uppercase tracking-widest">Travels</span>
+            <span className="truncate font-semibold tracking-tight text-primary">Design Your India</span>
+            <span className="truncate text-[10px] text-muted-foreground uppercase tracking-widest">Operations CRM</span>
           </div>
         </div>
       </SidebarHeader>
@@ -101,6 +103,7 @@ function AppSidebar() {
 export function Layout({ children }: { children: React.ReactNode }) {
   const { data: user, isLoading, isError } = useGetMe({
     query: {
+      queryKey: getGetMeQueryKey(),
       retry: false,
     }
   });

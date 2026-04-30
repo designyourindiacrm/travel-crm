@@ -12,7 +12,7 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const COLORS = ['hsl(220, 70%, 25%)', 'hsl(42, 75%, 52%)', 'hsl(160, 60%, 45%)', 'hsl(280, 65%, 60%)', 'hsl(340, 75%, 55%)'];
+const COLORS = ['hsl(224, 84%, 63%)', 'hsl(222, 47%, 11%)', 'hsl(160, 60%, 45%)', 'hsl(280, 65%, 60%)', 'hsl(0, 75%, 60%)'];
 
 export default function Dashboard() {
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({ query: { queryKey: getGetDashboardSummaryQueryKey() } });
@@ -35,7 +35,7 @@ export default function Dashboard() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
   };
 
   return (

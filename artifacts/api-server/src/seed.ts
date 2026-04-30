@@ -23,7 +23,7 @@ async function seed(): Promise<void> {
     .insert(usersTable)
     .values({
       name: "Aarav Sharma",
-      email: "admin@voyagercrm.com",
+      email: "admin@designyourindia.com",
       passwordHash: adminPwd,
       role: "admin",
     })
@@ -32,7 +32,7 @@ async function seed(): Promise<void> {
     .insert(usersTable)
     .values({
       name: "Priya Iyer",
-      email: "priya@voyagercrm.com",
+      email: "priya@designyourindia.com",
       passwordHash: agentPwd,
       role: "agent",
     })
@@ -41,7 +41,7 @@ async function seed(): Promise<void> {
     .insert(usersTable)
     .values({
       name: "Rohan Kapoor",
-      email: "rohan@voyagercrm.com",
+      email: "rohan@designyourindia.com",
       passwordHash: agentPwd,
       role: "agent",
     })
@@ -181,8 +181,9 @@ async function seed(): Promise<void> {
 
   void sql;
   logger.info({ leads: insertedLeads.length, bookings: bookingTemplates.length }, "Seed complete.");
-  logger.info("Login: admin@voyagercrm.com / admin123  (admin)");
-  logger.info("Login: priya@voyagercrm.com / agent123  (agent)");
+  logger.info("Login: admin@designyourindia.com / admin123  (admin)");
+  logger.info("Login: priya@designyourindia.com / agent123  (agent)");
+  logger.info("Login: rohan@designyourindia.com / agent123  (agent)");
   process.exit(0);
 }
 

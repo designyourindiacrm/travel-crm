@@ -48,11 +48,12 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <div className="w-full max-w-md space-y-8">
-        <div className="flex flex-col items-center justify-center text-center space-y-2">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Building2 className="size-6" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-primary">VOYAGER TRAVELS</h1>
+        <div className="flex flex-col items-center justify-center text-center space-y-3">
+          <img
+            src="/dyi-logo.png"
+            alt="Design Your India"
+            className="h-20 w-auto object-contain"
+          />
           <p className="text-sm text-muted-foreground tracking-widest uppercase">Operations Console</p>
         </div>
 
@@ -71,7 +72,7 @@ export default function Login() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="name@voyager.com" {...field} />
+                        <Input placeholder="name@designyourindia.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

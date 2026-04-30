@@ -37,10 +37,15 @@ A production-grade Travel CRM in a pnpm monorepo. Manages Leads, Lead Activities
 
 `cd artifacts/api-server && node seed.mjs` (only runs if users table is empty). Default logins:
 
-- admin@voyagercrm.com / admin123 (admin)
-- priya@voyagercrm.com / agent123 (agent)
-- rohan@voyagercrm.com / agent123 (agent)
+- admin@designyourindia.com / admin123 (admin)
+- priya@designyourindia.com / agent123 (agent)
+- rohan@designyourindia.com / agent123 (agent)
 
 ## Theme
 
-White background, deep navy primary, gold accent. Premium travel-boutique aesthetic.
+Branded as **Design Your India** (theme cloned from designyourindia.com).
+- Primary: vibrant blue `hsl(224 84% 63%)` (≈#4F7FF0)
+- Secondary: deep navy `hsl(222 47% 11%)` (≈#0F172A)
+- Background: white / soft blue-tinted `hsl(220 50% 97%)`
+- Font: Nunito Sans (Google Fonts)
+- Brand mark: `/dyi-logo.png` (downloaded from designyourindia.com), favicon at `/favicon.ico`

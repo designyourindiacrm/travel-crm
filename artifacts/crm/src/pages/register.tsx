@@ -54,7 +54,7 @@ export default function Register() {
           <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Building2 className="size-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-primary">VOYAGER TRAVELS</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-primary">Design Your India</h1>
           <p className="text-sm text-muted-foreground tracking-widest uppercase">Operations Console</p>
         </div>
 
@@ -86,7 +86,7 @@ export default function Register() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="name@voyager.com" {...field} />
+                        <Input placeholder="name@designyourindia.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

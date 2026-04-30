@@ -260,7 +260,7 @@ export default function Leads() {
                     <div className="flex justify-end gap-2">
                       <WhatsappButton 
                         phone={lead.phone} 
-                        message={`Hi ${lead.name}, this is ${currentUser?.name || 'an agent'} from Voyager Travels regarding your trip enquiry.`} 
+                        message={`Hi ${lead.name}, this is ${currentUser?.name || 'an agent'} from Design Your India regarding your trip enquiry.`} 
                       />
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/leads/${lead.id}`}>View</Link>

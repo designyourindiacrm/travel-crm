@@ -116,7 +116,7 @@ export default function LeadDetail() {
         <div className="flex gap-2 flex-wrap">
           <WhatsappButton 
             phone={lead.phone} 
-            message={`Hi ${lead.name}, this is ${currentUser?.name || 'an agent'} from Voyager Travels regarding your trip enquiry.`} 
+            message={`Hi ${lead.name}, this is ${currentUser?.name || 'an agent'} from Design Your India regarding your trip enquiry.`} 
           />
           
           <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

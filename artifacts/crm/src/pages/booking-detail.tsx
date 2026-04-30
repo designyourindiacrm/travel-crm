@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plane, Hotel, Car, Users, CheckCircle2, Clock, Wallet, MapPin, IndianRupee, PieChart } from "lucide-react";
+import { Plane, Hotel, Car, Users, CheckCircle2, Clock, Wallet, MapPin, IndianRupee, PieChart, Plus } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const PAYMENT_METHODS = ["Cash", "UPI", "Bank Transfer", "Card", "Cheque"] as const;

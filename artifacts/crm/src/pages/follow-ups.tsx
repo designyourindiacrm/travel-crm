@@ -93,7 +93,7 @@ function FollowUpCard({ lead, userName }: { lead: any, userName?: string }) {
         <div className="flex gap-2 mt-4 pt-4 border-t">
           <WhatsappButton 
             phone={lead.phone} 
-            message={`Hi ${lead.name}, this is ${userName || 'an agent'} from Voyager Travels following up on your trip.`}
+            message={`Hi ${lead.name}, this is ${userName || 'an agent'} from Design Your India following up on your trip.`}
             className="flex-1"
           />
           <Button variant="outline" className="flex-1" asChild>
