@@ -1,9 +1,8 @@
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
-import { useEffect } from "react";
 
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
@@ -22,16 +21,9 @@ import Settings from "@/pages/settings";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const [location, setLocation] = useLocation();
   const token = typeof localStorage !== "undefined" ? localStorage.getItem("crm_token") : null;
 
-  useEffect(() => {
-    if (!token && location !== "/login" && location !== "/register") {
-      setLocation("/login");
-    }
-  }, [token, location, setLocation]);
-
-  if (!token) return null;
+  if (!token) return <Redirect to="/login" />;
 
   return (
     <Layout>
