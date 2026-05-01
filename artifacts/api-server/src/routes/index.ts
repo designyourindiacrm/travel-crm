@@ -8,6 +8,8 @@ import bookingsRouter from "./bookings";
 import paymentsRouter from "./payments";
 import dashboardRouter from "./dashboard";
 import automationRouter from "./automation";
+import uploadRouter from "./upload";
+import webhookRouter from "./webhook";
 
 const router: IRouter = Router();
 
@@ -20,5 +22,7 @@ router.use(bookingsRouter);
 router.use(paymentsRouter);
 router.use(dashboardRouter);
 router.use(automationRouter);
+router.use(uploadRouter);
+router.use(webhookRouter);
 
 export default router;

@@ -28,6 +28,27 @@ A production-grade Travel CRM in a pnpm monorepo. Manages Leads, Lead Activities
 - Payment.type: Advance | Partial | Full
 - Activity.type: call | note | whatsapp | email | status_change
 
+## New Features (May 2026)
+
+### Excel Lead Import
+- **Endpoint:** `POST /api/upload/excel` (multipart/form-data, field name = `file`, auth required)
+- **Package:** `multer` (memory storage) + `xlsx`
+- **Columns:** name, phone, city, source, status, notes (header row required)
+- **Frontend:** "Import Excel" button in Leads page triggers hidden `<input type="file">`
+- **Template:** `/leads_import_template.xlsx` served as a static file from `artifacts/crm/public/`
+
+### Instagram / Meta Lead Ads Webhook
+- **Verification (GET):** `GET /api/webhook/meta-leads?hub.mode=subscribe&hub.verify_token=...&hub.challenge=...`
+- **Lead receive (POST):** `POST /api/webhook/meta-leads` — accepts Meta page lead payload, saves leads with `source = "Instagram"`
+- **Env var:** `META_WEBHOOK_VERIFY_TOKEN` (default: `designyourindia_verify_2024`)
+- No auth required (Meta posts publicly)
+
+### Leads Page Improvements
+- Inline status dropdown per row (PATCH /leads/:id)
+- Live name/phone search (client-side filter)
+- Source badges with colour coding (pink=Instagram, blue=Facebook)
+- Lead count badge
+
 ## Automation
 
 - `POST /api/automation/run` marks leads as Cold if `updatedAt` is older than 3 days and the status is not Converted/Lost/Cold; reports today's follow-ups, overdue follow-ups, and pending payments.
