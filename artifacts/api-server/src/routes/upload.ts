@@ -9,7 +9,8 @@
 import { Router, type IRouter } from "express";
 import multer from "multer";
 import * as XLSX from "xlsx";
-import { db, leadsTable, leadActivitiesTable } from "@workspace/db";
+import { and, desc, eq } from "drizzle-orm";
+import { db, leadsTable, leadActivitiesTable, usersTable } from "@workspace/db";
 import { requireAuth } from "../middlewares/auth";
 import { logger } from "../lib/logger";
 
@@ -122,6 +123,71 @@ router.post(
 
     req.log.info({ imported, skipped }, "Excel import complete");
     res.json({ imported, skipped, errors });
+  },
+);
+
+/**
+ * GET /api/leads/export
+ * Download all leads (with optional status / source filters) as an Excel file.
+ * Requires auth. Agents only see their own leads.
+ */
+router.get(
+  "/leads/export",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const status = typeof req.query["status"] === "string" ? req.query["status"] : undefined;
+    const source = typeof req.query["source"] === "string" ? req.query["source"] : undefined;
+
+    const conditions: ReturnType<typeof eq>[] = [];
+    if (status) conditions.push(eq(leadsTable.status, status as never));
+    if (source) conditions.push(eq(leadsTable.source, source as never));
+    if (req.user?.role === "agent") {
+      conditions.push(eq(leadsTable.assignedTo, req.user.userId));
+    }
+
+    const rows = await db
+      .select({ lead: leadsTable, agentName: usersTable.name })
+      .from(leadsTable)
+      .leftJoin(usersTable, eq(leadsTable.assignedTo, usersTable.id))
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(leadsTable.createdAt));
+
+    // Build Excel workbook in memory
+    const sheetData = [
+      ["ID", "Name", "Phone", "City", "Source", "Status", "Assigned To", "Follow-Up Date", "Notes", "Created At"],
+      ...rows.map(({ lead, agentName }) => [
+        lead.id,
+        lead.name,
+        lead.phone,
+        lead.city ?? "",
+        lead.source,
+        lead.status,
+        agentName ?? "Unassigned",
+        lead.followUpDate ? new Date(lead.followUpDate).toLocaleDateString("en-IN") : "",
+        lead.notes ?? "",
+        new Date(lead.createdAt).toLocaleDateString("en-IN"),
+      ]),
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+    // Auto-fit column widths
+    ws["!cols"] = sheetData[0]!.map((_, i) => ({
+      wch: Math.max(
+        10,
+        ...sheetData.map((row) => String(row[i] ?? "").length),
+      ),
+    }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Leads");
+
+    const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
+
+    const now = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="leads_export_${now}.xlsx"`);
+    res.send(buffer);
   },
 );
 

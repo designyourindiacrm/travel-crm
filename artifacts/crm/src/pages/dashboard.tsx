@@ -1,183 +1,245 @@
-import { useGetDashboardSummary, useGetPipelineSummary, useGetSourceBreakdown, useGetRecentActivity, useGetTopDestinations, getGetDashboardSummaryQueryKey, getGetPipelineSummaryQueryKey, getGetSourceBreakdownQueryKey, getGetRecentActivityQueryKey, getGetTopDestinationsQueryKey } from "@workspace/api-client-react";
+import {
+  useGetDashboardSummary,
+  useGetPipelineSummary,
+  useGetSourceBreakdown,
+  useGetRecentActivity,
+  useGetTopDestinations,
+  getGetDashboardSummaryQueryKey,
+  getGetPipelineSummaryQueryKey,
+  getGetSourceBreakdownQueryKey,
+  getGetRecentActivityQueryKey,
+  getGetTopDestinationsQueryKey
+} from "@workspace/api-client-react";
+import type {
+  DashboardSummary,
+  PipelineStage,
+  SourceCount,
+  RecentActivityItem,
+  DestinationStat
+} from "@workspace/api-client-react";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
-import { Users, IndianRupee, ArrowUpRight, TrendingUp, CalendarClock, Briefcase } from "lucide-react";
+import { Users, IndianRupee, ArrowUpRight, TrendingUp, CalendarClock, Briefcase, WalletCards, ChartColumnBig } from "lucide-react";
 import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
     maximumFractionDigits: 0
   }).format(value);
 };
 
-const COLORS = ['hsl(224, 84%, 63%)', 'hsl(222, 47%, 11%)', 'hsl(160, 60%, 45%)', 'hsl(280, 65%, 60%)', 'hsl(0, 75%, 60%)'];
+const COLORS = [
+  "hsl(224, 84%, 63%)",
+  "hsl(222, 47%, 11%)",
+  "hsl(160, 60%, 45%)",
+  "hsl(280, 65%, 60%)",
+  "hsl(0, 75%, 60%)"
+];
+
+const EMPTY_SUMMARY: DashboardSummary = {
+  totalLeads: 0,
+  newLeads: 0,
+  convertedLeads: 0,
+  conversionRate: 0,
+  totalBookings: 0,
+  totalRevenue: 0,
+  totalCost: 0,
+  totalProfit: 0,
+  totalPaid: 0,
+  outstandingBalance: 0,
+  followUpsToday: 0,
+  overdueFollowUps: 0
+};
+
+const statCards = [
+  {
+    key: "totalLeads",
+    title: "Total Leads",
+    helper: (summary: DashboardSummary) => `${summary.newLeads} new today`,
+    value: (summary: DashboardSummary) => summary.totalLeads.toString(),
+    icon: Users,
+    accent: "text-primary"
+  },
+  {
+    key: "conversionRate",
+    title: "Conversion Rate",
+    helper: (summary: DashboardSummary) => `${summary.convertedLeads} converted`,
+    value: (summary: DashboardSummary) => `${summary.conversionRate.toFixed(1)}%`,
+    icon: TrendingUp,
+    accent: "text-sky-600"
+  },
+  {
+    key: "revenue",
+    title: "Revenue",
+    helper: () => "Closed booking value",
+    value: (summary: DashboardSummary) => formatCurrency(summary.totalRevenue),
+    icon: IndianRupee,
+    accent: "text-primary"
+  },
+  {
+    key: "profit",
+    title: "Profit",
+    helper: () => "Net margin earned",
+    value: (summary: DashboardSummary) => formatCurrency(summary.totalProfit),
+    icon: ArrowUpRight,
+    accent: "text-emerald-600"
+  },
+  {
+    key: "outstanding",
+    title: "Outstanding",
+    helper: () => "Pending collection",
+    value: (summary: DashboardSummary) => formatCurrency(summary.outstandingBalance),
+    icon: WalletCards,
+    accent: "text-orange-600"
+  },
+  {
+    key: "followUpsToday",
+    title: "Follow-ups",
+    helper: (summary: DashboardSummary) => `${summary.overdueFollowUps} overdue`,
+    value: (summary: DashboardSummary) => `${summary.followUpsToday} today`,
+    icon: CalendarClock,
+    accent: "text-rose-600"
+  }
+] as const;
 
 export default function Dashboard() {
-  const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({ query: { queryKey: getGetDashboardSummaryQueryKey() } });
-  const { data: pipeline, isLoading: loadingPipeline } = useGetPipelineSummary({ query: { queryKey: getGetPipelineSummaryQueryKey() } });
-  const { data: sources, isLoading: loadingSources } = useGetSourceBreakdown({ query: { queryKey: getGetSourceBreakdownQueryKey() } });
-  const { data: activities, isLoading: loadingActivities } = useGetRecentActivity({ query: { queryKey: getGetRecentActivityQueryKey() } });
-  const { data: destinations, isLoading: loadingDestinations } = useGetTopDestinations({ query: { queryKey: getGetTopDestinationsQueryKey() } });
+  const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({
+    query: { queryKey: getGetDashboardSummaryQueryKey() }
+  });
+
+  const { data: pipeline, isLoading: loadingPipeline } = useGetPipelineSummary({
+    query: { queryKey: getGetPipelineSummaryQueryKey() }
+  });
+
+  const { data: sources, isLoading: loadingSources } = useGetSourceBreakdown({
+    query: { queryKey: getGetSourceBreakdownQueryKey() }
+  });
+
+  const { data: activities, isLoading: loadingActivities } = useGetRecentActivity({
+    query: { queryKey: getGetRecentActivityQueryKey() }
+  });
+
+  const { data: destinations, isLoading: loadingDestinations } = useGetTopDestinations({
+    query: { queryKey: getGetTopDestinationsQueryKey() }
+  });
 
   if (loadingSummary || loadingPipeline || loadingSources || loadingActivities || loadingDestinations) {
     return <div className="p-8 text-center text-muted-foreground">Loading dashboard...</div>;
   }
 
-  const containerVariants = {
+  const safeSummary: DashboardSummary = summary ?? EMPTY_SUMMARY;
+  const safeSources: SourceCount[] = Array.isArray(sources) ? sources : [];
+  const safePipeline: PipelineStage[] = Array.isArray(pipeline) ? pipeline : [];
+  const safeActivities: RecentActivityItem[] = Array.isArray(activities) ? activities : [];
+  const safeDestinations: DestinationStat[] = Array.isArray(destinations) ? destinations : [];
+
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
+      transition: { staggerChildren: 0.08 }
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring", stiffness: 300, damping: 24 }
+    }
   };
 
   return (
-    <motion.div 
-      className="space-y-6 pb-8"
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-    >
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-primary">Overview</h1>
-        <p className="text-muted-foreground mt-1">Here's what's happening today.</p>
+    <motion.div className="space-y-6 pb-8" variants={containerVariants} initial="hidden" animate="show">
+      <motion.div variants={itemVariants} className="rounded-3xl border border-primary/10 bg-linear-to-br from-white via-white to-primary/5 p-6 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <Badge variant="outline" className="border-primary/20 bg-primary/5 px-3 py-1 text-primary">Business snapshot</Badge>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-primary">Overview</h1>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground sm:text-base">
+                Track bookings, revenue, pipeline progress, and follow-up pressure from one clean control surface.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-primary/10">
+            <ChartColumnBig className="h-5 w-5 text-primary" />
+            <div>
+              <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Bookings</div>
+              <div className="text-lg font-semibold text-foreground">{safeSummary.totalBookings}</div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {statCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <motion.div key={card.key} variants={itemVariants}>
+              <Card className="border-primary/10 shadow-sm">
+                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
+                  <div>
+                    <CardDescription>{card.title}</CardDescription>
+                    <CardTitle className={`mt-2 text-3xl ${card.accent}`}>{card.value(safeSummary)}</CardTitle>
+                  </div>
+                  <div className="rounded-2xl bg-muted/40 p-3">
+                    <Icon className={`h-5 w-5 ${card.accent}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">{card.helper(safeSummary)}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary?.totalLeads || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                {summary?.newLeads || 0} new
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-        
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary?.conversionRate.toFixed(1)}%</div>
-              <p className="text-xs text-muted-foreground">
-                {summary?.convertedLeads} converted
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <IndianRupee className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{formatCurrency(summary?.totalRevenue || 0)}</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Profit</CardTitle>
-              <ArrowUpRight className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(summary?.totalProfit || 0)}</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
-              <Briefcase className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{formatCurrency(summary?.outstandingBalance || 0)}</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Follow-ups</CardTitle>
-              <CalendarClock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary?.followUpsToday || 0} today</div>
-              <p className="text-xs text-destructive font-medium">
-                {summary?.overdueFollowUps || 0} overdue
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <motion.div variants={itemVariants} className="col-span-4">
-          <Card className="h-full">
+      <div className="grid gap-4 lg:grid-cols-7">
+        <motion.div variants={itemVariants} className="lg:col-span-4">
+          <Card className="h-full border-primary/10 shadow-sm">
             <CardHeader>
               <CardTitle>Pipeline Breakdown</CardTitle>
+              <CardDescription>Lead count by journey stage</CardDescription>
             </CardHeader>
-            <CardContent className="pl-2">
-              <div className="h-[300px]">
+            <CardContent>
+              <div className="h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={pipeline || []}>
-                    <XAxis dataKey="status" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
-                    <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                    <Bar dataKey="count" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
+                  <BarChart data={safePipeline}>
+                    <XAxis dataKey="status" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="hsl(224, 84%, 63%)" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
         </motion.div>
-        
-        <motion.div variants={itemVariants} className="col-span-3">
-          <Card className="h-full">
+
+        <motion.div variants={itemVariants} className="lg:col-span-3">
+          <Card className="h-full border-primary/10 shadow-sm">
             <CardHeader>
               <CardTitle>Lead Sources</CardTitle>
+              <CardDescription>Where new inquiries are coming from</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px]">
+              <div className="h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie
-                      data={sources || []}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={2}
-                      dataKey="count"
-                      nameKey="source"
-                    >
-                      {sources?.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Pie data={safeSources} dataKey="count" nameKey="source" cx="50%" cy="50%" innerRadius={68} outerRadius={108}>
+                      {safeSources.map((_, index) => (
+                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Tooltip />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -187,60 +249,48 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-2">
         <motion.div variants={itemVariants}>
-          <Card>
+          <Card className="border-primary/10 shadow-sm">
             <CardHeader>
               <CardTitle>Top Destinations</CardTitle>
-              <CardDescription>By revenue generated</CardDescription>
+              <CardDescription>Highest revenue destinations right now</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {destinations?.map((dest) => (
-                  <div key={dest.destination} className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-sm">{dest.destination}</span>
-                      <span className="text-xs text-muted-foreground">{dest.bookings} bookings</span>
+            <CardContent className="space-y-3">
+              {safeDestinations.length === 0 ? (
+                <div className="rounded-2xl bg-muted/30 px-4 py-6 text-sm text-muted-foreground">No destination data available yet.</div>
+              ) : (
+                safeDestinations.map((destination) => (
+                  <div key={destination.destination} className="flex items-center justify-between rounded-2xl bg-muted/20 px-4 py-3">
+                    <div>
+                      <div className="font-medium text-foreground">{destination.destination}</div>
+                      <div className="text-xs text-muted-foreground">{destination.bookings} bookings</div>
                     </div>
-                    <div className="font-medium text-sm">{formatCurrency(dest.revenue)}</div>
+                    <div className="font-semibold text-primary">{formatCurrency(destination.revenue)}</div>
                   </div>
-                ))}
-                {(!destinations || destinations.length === 0) && (
-                  <div className="text-sm text-muted-foreground text-center py-4">No data available</div>
-                )}
-              </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <Card>
+          <Card className="border-primary/10 shadow-sm">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest updates across the team</CardDescription>
+              <CardDescription>Latest visible team movement</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {activities?.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-4">
-                    <div className="mt-1 bg-secondary/20 p-2 rounded-full">
-                      <Briefcase className="size-4 text-primary" />
-                    </div>
-                    <div className="flex flex-col flex-1">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium text-sm">{activity.leadName}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(activity.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">{activity.description}</span>
-                    </div>
+            <CardContent className="space-y-3">
+              {safeActivities.length === 0 ? (
+                <div className="rounded-2xl bg-muted/30 px-4 py-6 text-sm text-muted-foreground">No recent activity available yet.</div>
+              ) : (
+                safeActivities.map((activity) => (
+                  <div key={activity.id} className="rounded-2xl border border-border/70 bg-white px-4 py-3 shadow-sm">
+                    <div className="font-medium text-foreground">{activity.leadName}</div>
+                    <div className="mt-1 text-sm text-muted-foreground">{activity.description}</div>
                   </div>
-                ))}
-                {(!activities || activities.length === 0) && (
-                  <div className="text-sm text-muted-foreground text-center py-4">No recent activity</div>
-                )}
-              </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </motion.div>

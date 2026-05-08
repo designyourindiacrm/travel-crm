@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
-import { LayoutDashboard, Users, UserCircle, Briefcase, CreditCard, KanbanSquare, Settings, LogOut, Menu, Building2 } from "lucide-react";
+import { LayoutDashboard, Users, UserCircle, Briefcase, CreditCard, KanbanSquare, Settings, LogOut, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -15,7 +15,6 @@ import {
   SidebarTrigger,
   SidebarHeader,
   SidebarFooter,
-  useSidebar
 } from "@/components/ui/sidebar";
 
 const NAV_ITEMS = [
@@ -38,28 +37,27 @@ function AppSidebar() {
   };
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon">
-      <SidebarHeader className="border-b p-4">
-        <div className="flex items-center gap-3 px-2">
-          <img
-            src="/dyi-logo.png"
-            alt="Design Your India"
-            className="h-10 w-auto object-contain"
-          />
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold tracking-tight text-primary">Design Your India</span>
-            <span className="truncate text-[10px] text-muted-foreground uppercase tracking-widest">Operations CRM</span>
+    <Sidebar variant="sidebar" collapsible="icon" className="border-r border-sidebar-border/80">
+      <SidebarHeader className="border-b border-sidebar-border/80 px-4 py-5">
+        <div className="flex items-center gap-3 overflow-hidden rounded-2xl bg-linear-to-r from-primary/6 via-primary/3 to-transparent p-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-primary/10">
+            <img src="/dyi-logo.png" alt="Design Your India" className="h-8 w-auto object-contain" />
+          </div>
+          <div className="grid min-w-0 flex-1 text-left leading-tight">
+            <span className="truncate text-sm font-semibold tracking-tight text-primary">Design Your India</span>
+            <span className="truncate text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Operations CRM</span>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+
+      <SidebarContent className="px-2 py-3">
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1.5">
               {NAV_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url}>
+                  <SidebarMenuButton asChild isActive={location === item.url} className="h-10 rounded-xl px-3 text-sm font-medium">
                     <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
@@ -71,29 +69,30 @@ function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t p-4">
-        <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-full bg-secondary text-secondary-foreground font-semibold text-xs">
+
+      <SidebarFooter className="border-t border-sidebar-border/80 px-4 py-4">
+        <div className="rounded-2xl bg-muted/40 p-3">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground font-semibold text-xs shadow-sm">
               {user?.name?.substring(0, 2).toUpperCase() || "U"}
             </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{user?.name}</span>
-              <span className="truncate text-xs text-muted-foreground capitalize">{user?.role}</span>
+            <div className="grid min-w-0 flex-1 text-left leading-tight">
+              <span className="truncate text-sm font-medium">{user?.name}</span>
+              <span className="truncate text-xs capitalize text-muted-foreground">{user?.role}</span>
             </div>
           </div>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" asChild className="w-full">
-            <Link href="/settings">
-              <Settings className="size-4 mr-2" />
-              Settings
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" className="w-full text-destructive hover:text-destructive" onClick={handleLogout}>
-            <LogOut className="size-4 mr-2" />
-            Logout
-          </Button>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Button variant="outline" size="sm" asChild className="rounded-xl">
+              <Link href="/settings">
+                <Settings className="mr-2 size-4" />
+                Settings
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" className="rounded-xl text-destructive hover:text-destructive" onClick={handleLogout}>
+              <LogOut className="mr-2 size-4" />
+              Logout
+            </Button>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>
@@ -109,7 +108,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   });
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen bg-background">Loading...</div>;
+    return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Loading...</div>;
   }
 
   if (isError || !user) {
@@ -119,13 +118,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background text-foreground">
+      <div className="flex min-h-screen w-full bg-[linear-gradient(180deg,rgba(89,125,240,0.04),transparent_160px)] text-foreground">
         <AppSidebar />
-        <div className="flex flex-1 flex-col w-full min-w-0">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur sm:px-6 md:h-16">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/90 px-4 backdrop-blur sm:px-6">
             <SidebarTrigger className="sm:hidden" />
           </header>
-          <main className="flex-1 p-4 sm:p-6 md:p-8 w-full max-w-[1600px] mx-auto overflow-x-hidden">
+          <main className="mx-auto w-full max-w-[1640px] flex-1 overflow-x-hidden p-4 sm:p-6 md:p-8">
             {children}
           </main>
         </div>

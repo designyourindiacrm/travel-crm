@@ -1,24 +1,34 @@
 import { Button } from "./ui/button";
-import { Phone } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
-export function WhatsappButton({ phone, message, className }: { phone?: string | null, message: string, className?: string }) {
+function normalizeWhatsappNumber(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) return `91${digits}`;
+  return digits;
+}
+
+export function WhatsappButton({ phone, message, className }: { phone?: string | null; message: string; className?: string }) {
   if (!phone) return null;
-  
-  const handleWhatsApp = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const digits = phone.replace(/\D/g, "");
-    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(message)}`, "_blank");
+
+  const normalizedPhone = normalizeWhatsappNumber(phone);
+  const href = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+
+  const handleOpen = () => {
+    const popup = window.open(href, "_blank", "noopener,noreferrer");
+    if (!popup) {
+      window.location.href = href;
+    }
   };
 
   return (
     <Button
+      type="button"
       variant="outline"
       size="sm"
-      className={`border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 ${className}`}
-      onClick={handleWhatsApp}
+      className={`border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 ${className ?? ""}`}
+      onClick={handleOpen}
     >
-      <Phone className="size-4 mr-2" />
+      <MessageCircle className="mr-2 size-4" />
       WhatsApp
     </Button>
   );
